@@ -3,13 +3,13 @@
     <reels-swiper>
       <template v-slot:reel-cards>
         <swiper-slide v-for="(card, index) in reelCards" :key="index" class="swiper-slide">
-          <reels-card :title="card.title" />
+          <reels-card :title="card.title" @click="toggleModal"/>
         </swiper-slide>
       </template>
     </reels-swiper>
   </section>
 
-  <reels-modal></reels-modal>
+  <reels-modal :modalActive="modalActive" :toggleModal="toggleModal"></reels-modal>
 </template>
 
 <script>
@@ -17,6 +17,7 @@ import ReelsSwiper from "./ReelsSwiper.vue";
 import ReelsCard from "./ReelsCard.vue";
 import { SwiperSlide } from "swiper/vue";
 import ReelsModal from "./ReelsModal.vue";
+import { ref } from "vue";
 
 export default {
   components: {
@@ -42,6 +43,15 @@ export default {
       ],
     };
   },
+  setup() {
+    const modalActive = ref(true)
+    
+    const toggleModal = () => {
+      modalActive.value = !modalActive.value
+    }
+
+    return {modalActive, toggleModal}
+  }
 };
 </script>
 
