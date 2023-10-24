@@ -1,9 +1,28 @@
 <template>
   <div class="reels-modal-card" v-if="swiperSlideState.value.isActive">
     <div class="reels-modal-card-content">
+      <loader v-if="isLoading" />
+      <video
+        autoplay
+        muted
+        :src="activePage.source"
+        v-if="activePage.sourceType == VIDEO_SOURCE_TYPE"
+        ref="videoPlayer"
+        @loadedmetadata="logDuration"
+        @timeupdate="updateProgressBar"
+        :key="activePage.id"
+        @ended="onVideoEnd()"
+        @canplay="updateVideoPaused"
+        @playing="updateVideoPaused"
+        @pause="updateVideoPaused"
+      >
+        Your browser does not support the video tag.
+      </video>
       <img
-        src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSv34C4rFLqv3I8TFjO00_T_Hp8t2XX_3PhVCei0qfESNt4jojxoU2phU7Jqrw&s"
+        :src="activePage.source"
         alt=""
+        v-if="activePage.sourceType == IMAGE_SOURCE_TYPE"
+        @load="imageLoaded"
       />
     </div>
     <div class="reels-modal-card-overlay">
@@ -58,38 +77,279 @@
       </div>
       <div class="reels-modal-card-body">
         <div class="reels-modal-card-body-progress">
-          <div class="reels-modal-card-body-progress-line">
-            <div class="reels-modal-card-body-progress-line-time"></div>
+          <div
+            class="reels-modal-card-body-progress-line"
+            v-for="(page, index) in slide.pages"
+            :key="index"
+          >
+            <div
+              class="reels-modal-card-body-progress-line-time"
+              v-if="index < activePageId"
+              :style="{ width: '100%' }"
+            ></div>
+            <div
+              class="reels-modal-card-body-progress-line-time"
+              v-if="index == activePageId"
+              :style="{ width: this.progress + '%' }"
+            ></div>
           </div>
         </div>
+        <button @click="pause">Pause</button>
+        <button @click="play">Play</button>
+        <button @click="goToPrevSlide">Prev</button>
+
+        <button @click="prevPage">Prev Page</button>
+        <button @click="nextPage">Next Page</button>
+        <button @click="goToNextSlide">Next</button>
+        <button @click="getP">1</button>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import Swiper from "swiper";
-import { useSwiperSlide } from "swiper/vue";
+import { useSwiperSlide, useSwiper } from "swiper/vue";
+import { VIDEO_SOURCE_TYPE, IMAGE_SOURCE_TYPE } from "@/common/constants.js";
+import Loader from "@/components/Loader.vue";
+import { onMounted, onUnmounted, ref, watch } from "vue";
 
 export default {
-  setup(props, { emit }) {
-    const close = () => {
-      emit("close");
+  setup() {
+    const swiperRef = ref(null);
+    const swiper = useSwiper();
+    onMounted(() => {
+      swiperRef.value = swiper.value;
+    });
+
+    const isEndSlide = () => {
+      if (swiperRef.value) {
+        return swiperRef.value.isEnd;
+      }
     };
 
-    return { close };
+    const activeSlideIndex = () => {
+      if (swiperRef.value) {
+        return swiperRef.value.activeIndex;
+      }
+    };
+
+    const goToNextSlide = () => {
+      if (swiperRef.value) {
+        swiperRef.value.slideNext();
+      }
+    };
+
+    const goToPrevSlide = () => {
+      if (swiperRef.value) {
+        swiperRef.value.slidePrev();
+      }
+    };
+
+    return {
+      goToNextSlide,
+      goToPrevSlide,
+      isEndSlide,
+      activeSlideIndex,
+    };
+  },
+  components: { Loader },
+  data() {
+    return {
+      VIDEO_SOURCE_TYPE: VIDEO_SOURCE_TYPE,
+      IMAGE_SOURCE_TYPE: IMAGE_SOURCE_TYPE,
+
+      autoDelay: 5000,
+      duration: 0,
+      timer: null,
+      progress: 0,
+      isPause: false,
+      activePage: null,
+      activePageId: 0,
+      maxActivePages: 0,
+
+      videoElement: null,
+      keydownHandler: null,
+
+      isLoading: true,
+      currentTime: 0,
+    };
   },
   computed: {
     swiperSlideState() {
-      // Используйте функцию useSwiperSlide для получения состояния SwiperSlide
       return useSwiperSlide();
     },
   },
 
   props: {
     title: String,
-    toggleModal: Boolean | Function,
-    // swiperSlideState: Object, // Проп для передачи состояния SwiperSlide
+    toggleModal: Function,
+    slide: Object,
+  },
+  mounted() {
+    this.activePage = this.slide.pages[0];
+    this.maxActivePages = this.slide.pages.length;
+    this.activePageId = 0;
+
+    if (this.activePage.sourceType != this.VIDEO_SOURCE_TYPE) {
+      this.startProgress();
+    }
+
+    // Определяем обработчик события и сохраняем его как метод
+    this.keydownHandler = (e) => {
+      if (e.key === "m") {
+        this.nextPage();
+      }
+      if (e.key === "ArrowLeft") {
+        this.prevPage();
+      }
+      if (e.key === "Escape") {
+        this.toggleModal();
+      }
+      if (e.code === "Space") {
+        if (this.isPause) {
+          this.play();
+        } else {
+          this.pause();
+        }
+      }
+    };
+
+    // Добавляем слушатель события
+    document.addEventListener("keydown", this.keydownHandler);
+  },
+  beforeUnmount() {
+    this.resetProgress();
+
+    // Удаляем слушатель события при размонтировании
+    document.removeEventListener("keydown", this.keydownHandler);
+  },
+  methods: {
+    startProgress() {
+      this.timer = setInterval(() => {
+        if (
+          this.swiperSlideState.value.isActive &&
+          !this.isPause &&
+          !this.isLoading
+        ) {
+          if (this.currentTime <= this.autoDelay) {
+            this.currentTime += 100;
+            this.progress = (this.currentTime / this.autoDelay) * 100;
+          }
+          if (this.progress >= 100) {
+            this.resetProgress();
+            this.nextPage();
+          }
+        }
+      }, 100);
+    },
+    stopProgress() {
+      clearInterval(this.timer);
+    },
+    resetProgress() {
+      clearInterval(this.timer);
+      this.progress = 0;
+      this.currentTime = 0;
+      this.duration = 0;
+    },
+    // delayNextPageOrCloseAlert() {
+    //   this.currentTime = setTimeout(() => {
+    //     if (this.swiperSlideState.value.isActive) {
+    //       this.nextPage();
+    //     }
+    //   }, this.autoDelay);
+    // },
+    nextPage() {
+      if (this.swiperSlideState.value.isActive) {
+        if (this.activePageId < this.maxActivePages - 1) {
+          this.activePageId++;
+          this.activePage = this.slide.pages[this.activePageId];
+
+          this.currentTime = 0;
+          this.progress = 0;
+          this.duration = 0;
+
+          this.isLoading = true;
+
+          this.resetProgress();
+          if (this.activePage.sourceType != this.VIDEO_SOURCE_TYPE) {
+            this.startProgress();
+
+            // this.delayNextPageOrCloseAlert();
+          } else {
+          }
+        } else {
+          this.activePageId = 0;
+          this.activePage = this.slide.pages[0];
+
+          if (this.isEndSlide()) {
+            this.resetProgress();
+            this.toggleModal();
+          } else {
+            this.resetProgress();
+            this.goToNextSlide();
+          }
+        }
+      }
+    },
+    prevPage() {
+      if (this.activePageId > 0) {
+        this.activePageId--;
+        this.activePage = this.slide.pages[this.activePageId];
+
+        this.isLoading = true;
+
+        this.resetProgress();
+      } else {
+        if (this.activeSlideIndex() !== 0) {
+          this.resetProgress();
+          this.goToPrevSlide();
+        }
+      }
+    },
+    pause() {
+      this.stopProgress();
+      this.isPause = true;
+      if (this.videoElement) {
+        this.videoElement.pause();
+      }
+    },
+    play() {
+      this.isPause = false;
+      if (this.activePage.sourceType != this.VIDEO_SOURCE_TYPE) {
+        this.startProgress();
+      }
+      if (this.videoElement) {
+        this.videoElement.play();
+      }
+    },
+
+    logDuration() {
+      if (this.$refs.videoPlayer) {
+        this.duration = this.$refs.videoPlayer.duration;
+        this.isLoading = false;
+      }
+    },
+    onVideoEnd() {
+      this.nextPage();
+    },
+    updateVideoPaused(event) {
+      this.videoElement = event.target;
+      this.paused = event.target.paused;
+    },
+    updateProgressBar() {
+      if (this.$refs.videoPlayer) {
+        this.progress =
+          (this.$refs.videoPlayer.currentTime /
+            this.$refs.videoPlayer.duration) *
+          100;
+      }
+    },
+    imageLoaded() {
+      this.isLoading = false;
+    },
+    getP() {
+      console.log(this.swiperSlideState.value.isActive);
+    },
   },
 };
 </script>
@@ -107,6 +367,11 @@ export default {
   z-index: 2;
 }
 .reels-modal-card-content img {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}
+.reels-modal-card-content video {
   object-fit: cover;
   width: 100%;
   height: 100%;
@@ -242,6 +507,7 @@ export default {
 .reels-modal-card-body-progress-line-time {
   width: 100%;
   height: 2px;
-  background: #D9D9D9;
+  background: #d9d9d9;
+  transition: width 0.2s linear;
 }
 </style>

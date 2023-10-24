@@ -1,13 +1,10 @@
 <script setup>
-import ReelsSection from './components/ReelsSection.vue';
-
+import ReelsSection from "./components/ReelsSection.vue";
 </script>
 
 <template>
-
-  <ReelsSection :msg="qwe"/>
+  <div id="modals"></div>
+  <ReelsSection />
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

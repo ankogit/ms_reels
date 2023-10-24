@@ -5,11 +5,7 @@
     class="mySwiper"
     :freeMode="false"
     :mousewheel="false"
-    :navigation="true"
     draggable="false"
-    allowTouchMove="false"
-    touchRatio="0"
-    @slideChange="activeSlideIndex = $event.realIndex"
   >
     <slot />
   </swiper>
@@ -40,14 +36,11 @@ export default {
       modules: [
         EffectCards,
         // FreeMode, Mousewheel,
-        Navigation,
       ],
     };
   },
   data() {
-    return {
-      activeSlideIndex: 0, // Инициализируйте индекс активного слайда
-    };
+    return {};
   },
 };
 </script>

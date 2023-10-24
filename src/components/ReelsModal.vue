@@ -1,16 +1,21 @@
 <template>
-  <transition name="modal-animation">
-    <div v-show="modalActive">
-      <div class="reels-modal">
-        <div class="reels-modal-light"></div>
-          <ReelsModalSlider @slide-change="activeSlideIndex = $event">
-            <swiper-slide v-for="i in [1, 2, 3]">
-              <reels-modal-card :toggleModal="toggleModal"></reels-modal-card>
+  <Teleport to="#modals">
+    <transition name="modal-animation">
+      <div v-if="modalActive">
+        <div class="reels-modal">
+          <div class="reels-modal-light"></div>
+          <ReelsModalSlider>
+            <swiper-slide v-for="slide in slides">
+              <reels-modal-card
+                :toggleModal="toggleModal"
+                :slide="slide"
+              ></reels-modal-card>
             </swiper-slide>
           </ReelsModalSlider>
         </div>
       </div>
-  </transition>
+    </transition>
+  </Teleport>
 </template>
 
 <script>
@@ -25,7 +30,6 @@ export default {
     SwiperSlide,
   },
   props: {
-    activeSlideIndex: Number,
     modalActive: Boolean,
     toggleModal: Boolean | Function,
   },
@@ -38,14 +42,77 @@ export default {
   // },
   data() {
     return {
-      autoDelay: 5000,
-      timer: null,
-      isPause: false,
-      progress: 0,
-      video: null,
-
+      slides: [
+        {
+          id: 1,
+          user: "user1",
+          title: "Очень длинное название что-то про Иссыкуль",
+          postId: 1,
+          pages: [
+            {
+              id: 1,
+              source:
+                "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+              sourceType: "video",
+              createdAt: "2021-08-01T12:00:00.000Z",
+              description: "Очень длинное название что-то про Иссыкуль",
+            },
+            {
+              id: 2,
+              source: "https://samplelib.com/lib/preview/mp4/sample-10s.jpg",
+              sourceType: "image",
+              createdAt: "2022-08-01T11:00:00.000Z",
+              description: "",
+            },
+          ],
+        },
+        {
+          id: 2,
+          user: "user2",
+          title: "Card 2",
+          postId: 2,
+          pages: [
+            {
+              id: 1,
+              source:
+                "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
+              sourceType: "video",
+              createdAt: "2021-08-01T12:00:00.000Z",
+              description: "Очень длинное название что-то про Иссыкуль",
+            },
+            {
+              id: 2,
+              source:
+                "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4",
+              sourceType: "video",
+              createdAt: "2022-08-01T11:00:00.000Z",
+              description: "",
+            },
+            {
+              id: 3,
+              source:
+                "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4",
+              sourceType: "video",
+              createdAt: "2022-08-01T11:00:00.000Z",
+              description: "",
+            },
+          ],
+        },
+      ],
     };
   },
+  // methods: {
+  //   openModal() {
+  //     this.isModalOpen = true;
+  //     this.modalTimeout = setTimeout(() => {
+  //       this.closeModal();
+  //     }, 5000); // Закрыть модальное окно через 5 секунд
+  //   },
+  //   closeModal() {
+  //     this.isModalOpen = false;
+  //     clearTimeout(this.modalTimeout);
+  //   },
+  // },
 };
 </script>
 
@@ -97,5 +164,4 @@ export default {
 .swiper-slide {
   background: #2d2d2d;
 }
-
 </style>

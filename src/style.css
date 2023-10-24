@@ -15,3 +15,7 @@ html {
   box-sizing: inherit;
 }
 
+#modals {
+  z-index: 10000;
+  position: relative;
+}
