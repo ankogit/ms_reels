@@ -1,11 +1,13 @@
 <template>
   <swiper
+    ref="mySwiper"
     :effect="'cards'"
     :modules="modules"
     class="mySwiper"
     :freeMode="false"
     :mousewheel="false"
     draggable="false"
+    @slideChange="handleSlideChange"
   >
     <slot />
   </swiper>
@@ -40,7 +42,14 @@ export default {
     };
   },
   data() {
-    return {};
+    return {
+      activeSlideKey: null, // Ключ активного слайда
+    };
+  },
+  methods: {
+    handleSlideChange(slideData) {
+      this.$emit("slide-changed", slideData);
+    },
   },
 };
 </script>

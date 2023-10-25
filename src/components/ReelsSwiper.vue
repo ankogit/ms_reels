@@ -1,6 +1,6 @@
 <template>
   <swiper
-    centeredSlides="true"
+    :centeredSlides="true"
     slidesPerView="auto"
     :spaceBetween="14"
     :grabCursor="true"

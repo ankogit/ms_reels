@@ -1,7 +1,10 @@
 <template>
-  <div class="reels-modal-card" v-if="swiperSlideState.value.isActive">
+  <div
+    class="reels-modal-card"
+    v-if="activeSlideIndex === slideIndex && activePage != null"
+  >
     <div class="reels-modal-card-content">
-      <loader v-if="isLoading" />
+      <Loader v-if="isLoading" />
       <video
         autoplay
         muted
@@ -90,39 +93,100 @@
             <div
               class="reels-modal-card-body-progress-line-time"
               v-if="index == activePageId"
-              :style="{ width: this.progress + '%' }"
+              :style="{ width: progress + '%' }"
             ></div>
           </div>
         </div>
-        <button @click="pause">Pause</button>
+        <div class="reels-modal-nav">
+          <div class="reels-modal-nav-left" @click="prevPage"></div>
+          <div class="reels-modal-nav-right" @click="nextPage"></div>
+        </div>
+        <!-- <button @click="pause">Pause</button>
         <button @click="play">Play</button>
         <button @click="goToPrevSlide">Prev</button>
 
         <button @click="prevPage">Prev Page</button>
         <button @click="nextPage">Next Page</button>
         <button @click="goToNextSlide">Next</button>
-        <button @click="getP">1</button>
+        <button @click="getP">1</button> -->
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import Loader from "./Loader.vue";
+import { onMounted, ref, computed, onUnmounted } from "vue";
 import { useSwiperSlide, useSwiper } from "swiper/vue";
+import ReelsModalCard from "./ReelsModalCard.vue";
 import { VIDEO_SOURCE_TYPE, IMAGE_SOURCE_TYPE } from "@/common/constants.js";
-import Loader from "@/components/Loader.vue";
-import { onMounted, onUnmounted, ref, watch } from "vue";
 
 export default {
-  setup() {
+  components: {
+    Loader,
+  },
+  props: {
+    toggleModal: Function,
+    slide: Object,
+    slideIndex: Number,
+    activeSlideIndex: Number,
+  },
+  setup(props) {
+    const autoDelay = 5000;
+
+    const timer = ref(null);
+    const progress = ref(0);
+    const currentTime = ref(0);
+
+    const duration = ref(0);
+    const isPause = ref(true);
+    const activePage = ref(null);
+    const activePageId = ref(0);
+    const maxActivePages = ref(0);
+
+    const videoElement = ref(null);
+    const keydownHandler = ref(null);
+
+    const isLoading = ref(true);
+
     const swiperRef = ref(null);
     const swiper = useSwiper();
-    console.log("setup");
 
-    onMounted(() => {
-      console.log("onMounted");
+    onUnmounted(() => {
+      document.removeEventListener("keydown", keydownHandler.value);
+      console.log("onUnmounted");
+    }),
+      onMounted(() => {
+        activePage.value = props.slide.pages[0];
+        maxActivePages.value = props.slide.pages.length;
+        activePageId.value = 0;
+        console.log("onMounted", activePage.value, props.slide.pages);
 
-      swiperRef.value = swiper.value;
+        keydownHandler.value = (e) => {
+          if (e.key === "ArrowRight") {
+            nextPage();
+          }
+          if (e.key === "ArrowLeft") {
+            prevPage();
+          }
+          if (e.key === "Escape") {
+            props.toggleModal();
+          }
+          if (e.code === "Space") {
+            if (isPause.value) {
+              play();
+            } else {
+              pause();
+            }
+          }
+        };
+        document.addEventListener("keydown", keydownHandler.value);
+
+        swiperRef.value = swiper.value;
+      });
+
+    const swiperSlideState = computed(() => {
+      return useSwiperSlide();
     });
 
     const isEndSlide = () => {
@@ -130,12 +194,6 @@ export default {
         return swiperRef.value.isEnd;
       }
     };
-
-    // const activeSlideIndex = () => {
-    //   if (swiperRef.value) {
-    //     return swiperRef.value.activeIndex;
-    //   }
-    // };
 
     const goToNextSlide = () => {
       if (swiperRef.value) {
@@ -149,214 +207,164 @@ export default {
       }
     };
 
-    return {
-      goToNextSlide,
-      goToPrevSlide,
-      isEndSlide,
-      // activeSlideIndex,
-    };
-  },
-  components: { Loader },
-  data() {
-    return {
-      VIDEO_SOURCE_TYPE: VIDEO_SOURCE_TYPE,
-      IMAGE_SOURCE_TYPE: IMAGE_SOURCE_TYPE,
-
-      autoDelay: 5000,
-      duration: 0,
-      timer: null,
-      progress: 0,
-      isPause: false,
-      activePage: null,
-      activePageId: 0,
-      maxActivePages: 0,
-
-      videoElement: null,
-      keydownHandler: null,
-
-      isLoading: true,
-      currentTime: 0,
-    };
-  },
-  computed: {
-    swiperSlideState() {
-      return useSwiperSlide();
-    },
-  },
-
-  props: {
-    title: String,
-    toggleModal: Function,
-    slide: Object,
-    activeSlideIndex: Number,
-    slideIndex: Number,
-  },
-  mounted() {
-    console.log("mounted");
-    this.activePage = this.slide.pages[0];
-    this.maxActivePages = this.slide.pages.length;
-    this.activePageId = 0;
-
-    // if (this.activePage.sourceType != this.VIDEO_SOURCE_TYPE) {
-    //   this.startProgress();
-    // }
-
-    // Определяем обработчик события и сохраняем его как метод
-    this.keydownHandler = (e) => {
-      if (e.key === "ArrowRight") {
-        this.nextPage();
-      }
-      if (e.key === "ArrowLeft") {
-        this.prevPage();
-      }
-      if (e.key === "Escape") {
-        this.toggleModal();
-      }
-      if (e.code === "Space") {
-        if (this.isPause) {
-          this.play();
-        } else {
-          this.pause();
-        }
-      }
-    };
-    document.addEventListener("keydown", this.keydownHandler);
-  },
-  beforeUnmount() {
-    this.resetProgress();
-
-    // Удаляем слушатель события при размонтировании
-    document.removeEventListener("keydown", this.keydownHandler);
-  },
-  methods: {
-    startProgress() {
-      this.timer = setInterval(() => {
-        if (
-          this.swiperSlideState.value.isActive &&
-          !this.isPause &&
-          !this.isLoading
-        ) {
-          if (this.currentTime <= this.autoDelay) {
-            this.currentTime += 100;
-            this.progress = (this.currentTime / this.autoDelay) * 100;
+    const startProgress = () => {
+      console.log("startProgress");
+      timer.value = setInterval(() => {
+        if (!isPause.value && !isLoading.value) {
+          if (currentTime.value <= autoDelay) {
+            currentTime.value += 100;
+            progress.value = (currentTime.value / autoDelay) * 100;
+            console.log(progress.value);
           }
-          if (this.progress >= 100) {
-            this.resetProgress();
-            this.nextPage();
+          if (progress.value >= 100) {
+            resetProgress();
+            nextPage();
           }
         }
       }, 100);
-    },
-    stopProgress() {
-      clearInterval(this.timer);
-    },
-    resetProgress() {
-      clearInterval(this.timer);
-      this.progress = 0;
-      this.currentTime = 0;
-      this.duration = 0;
-    },
-    // delayNextPageOrCloseAlert() {
-    //   this.currentTime = setTimeout(() => {
-    //     if (this.swiperSlideState.value.isActive) {
-    //       this.nextPage();
-    //     }
-    //   }, this.autoDelay);
-    // },
-    nextPage() {
-      // if (this.swiperSlideState.value.isActive) {
-      // console.log(this.swiperSlideState.value);
-      // }
-      if (this.activeSlideIndex == this.slideIndex) {
-        if (this.activePageId < this.maxActivePages - 1) {
-          this.activePageId++;
-          this.activePage = this.slide.pages[this.activePageId];
+    };
 
-          this.currentTime = 0;
-          this.progress = 0;
-          this.duration = 0;
+    const stopProgress = () => {
+      console.log("stopProgress");
+      clearInterval(timer.value);
+    };
 
-          this.isLoading = true;
+    const resetProgress = () => {
+      console.log("resetProgress");
+      clearInterval(timer.value);
+      progress.value = 0;
+      currentTime.value = 0;
+      duration.value = 0; // Вы можете определить 'duration', если это необходимо
+    };
+    const pause = () => {
+      isPause.value = true;
+      stopProgress();
+      if (activePage.value.sourceType == VIDEO_SOURCE_TYPE) {
+        if (videoElement) {
+          videoElement.value.pause();
+        }
+      }
+    };
+    const play = () => {
+      isPause.value = false;
+      if (activePage.value.sourceType != VIDEO_SOURCE_TYPE) {
+        startProgress();
+      }
+      if (videoElement.value) {
+        videoElement.value.play();
+      }
+    };
 
-          this.resetProgress();
-          if (this.activePage.sourceType != this.VIDEO_SOURCE_TYPE) {
-            // this.startProgress();
-            // this.delayNextPageOrCloseAlert();
-          } else {
-          }
+    const logDuration = (event) => {
+      console.log("logDuration", event);
+      if (!videoElement.value) {
+        videoElement.value = event.target;
+      }
+      duration.value = event.target.duration;
+      isLoading.value = false;
+    };
+    const onVideoEnd = () => {
+      nextPage();
+    };
+    const updateVideoPaused = (event) => {
+      console.log("updateVideoPaused", event.target.paused);
+      videoElement.value = event.target;
+      isPause.value = event.target.paused;
+    };
+    const updateProgressBar = () => {
+      if (activePage.value.sourceType == VIDEO_SOURCE_TYPE) {
+        if (videoElement.value) {
+          progress.value =
+            (videoElement.value.currentTime / videoElement.value.duration) *
+            100;
+        }
+      }
+    };
+
+    const imageLoaded = () => {
+      console.log("imageLoaded");
+      isPause.value = false;
+      isLoading.value = false;
+      startProgress();
+    };
+
+    const nextPage = () => {
+      if (props.activeSlideIndex === props.slideIndex) {
+        if (activePageId.value < maxActivePages.value - 1) {
+          console.log("nextPage", activePageId.value);
+          activePageId.value++;
+          activePage.value = props.slide.pages[activePageId.value];
+
+          isLoading.value = true;
+          resetProgress();
         } else {
-          // this.activePageId = 0;
-          // this.activePage = this.slide.pages[0];
-
-          if (this.isEndSlide()) {
-            this.resetProgress();
-            this.toggleModal();
+          if (isEndSlide()) {
+            resetProgress();
+            props.toggleModal();
           } else {
-            this.resetProgress();
-            this.goToNextSlide();
+            resetProgress();
+            goToNextSlide();
           }
         }
       }
-    },
-    prevPage() {
-      if (this.activeSlideIndex === 0) {
-        this.activePageId--;
-        this.activePage = this.slide.pages[this.activePageId];
-
-        this.isLoading = true;
-
-        this.resetProgress();
+    };
+    const prevPage = () => {
+      if (activePageId.value > 0) {
+        activePageId.value--;
+        activePage.value = props.slide.pages[activePageId.value];
+        isLoading.value = true;
+        resetProgress();
       } else {
-        if (this.activeSlideIndex > 0) {
-          this.resetProgress();
-          this.goToPrevSlide();
+        if (props.activeSlideIndex === 0) {
+          console.log("prev");
+        } else {
+          resetProgress();
+          goToPrevSlide();
         }
       }
-    },
-    pause() {
-      this.stopProgress();
-      this.isPause = true;
-      if (this.videoElement) {
-        this.videoElement.pause();
-      }
-    },
-    play() {
-      this.isPause = false;
-      if (this.activePage.sourceType != this.VIDEO_SOURCE_TYPE) {
-        // this.startProgress();
-      }
-      if (this.videoElement) {
-        this.videoElement.play();
-      }
-    },
+    };
 
-    logDuration() {
-      if (this.$refs.videoPlayer) {
-        this.duration = this.$refs.videoPlayer.duration;
-        this.isLoading = false;
-      }
-    },
-    onVideoEnd() {
-      this.nextPage();
-    },
-    updateVideoPaused(event) {
-      this.videoElement = event.target;
-      this.paused = event.target.paused;
-    },
-    updateProgressBar() {
-      if (this.$refs.videoPlayer) {
-        this.progress =
-          (this.$refs.videoPlayer.currentTime /
-            this.$refs.videoPlayer.duration) *
-          100;
-      }
-    },
-    imageLoaded() {
-      this.isLoading = false;
-    },
+    const cl = () => {
+      console.log("cl");
+    };
+
+    return {
+      startProgress,
+      stopProgress,
+      resetProgress,
+      onMounted,
+      swiperSlideState,
+
+      autoDelay,
+      timer,
+      progress,
+      currentTime,
+      duration,
+      isPause,
+      activePage,
+      activePageId,
+      maxActivePages,
+      videoElement,
+      keydownHandler,
+      isLoading,
+
+      VIDEO_SOURCE_TYPE,
+      IMAGE_SOURCE_TYPE,
+
+      pause,
+      play,
+      logDuration,
+      onVideoEnd,
+      updateVideoPaused,
+      updateProgressBar,
+      imageLoaded,
+      nextPage,
+      prevPage,
+    };
   },
 };
 </script>
+
 <style>
 .reels-modal-card {
   position: relative;
@@ -401,6 +409,8 @@ export default {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  height: 100%;
+  width: 100%;
 }
 .reels-modal-card-header {
   display: flex;
@@ -513,5 +523,22 @@ export default {
   height: 2px;
   background: #d9d9d9;
   transition: width 0.2s linear;
+}
+
+.reels-modal-nav {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  align-self: stretch;
+  width: 100%;
+  height: 100%;
+}
+.reels-modal-nav-left {
+  width: 30%;
+  height: 100%;
+}
+.reels-modal-nav-right {
+  width: 70%;
+  height: 100%;
 }
 </style>

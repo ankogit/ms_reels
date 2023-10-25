@@ -4,12 +4,19 @@
       <div v-if="modalActive">
         <div class="reels-modal">
           <div class="reels-modal-light"></div>
-          <ReelsModalSlider>
-            <swiper-slide v-for="slide in slides">
-              <reels-modal-card
+          <ReelsModalSlider @slide-changed="handleSlideChanged">
+            <swiper-slide v-for="(slide, index) in slides" :key="index">
+              <!-- <reels-modal-card
                 :toggleModal="toggleModal"
                 :slide="slide"
-              ></reels-modal-card>
+                v-if="activeSlideIndex === index"
+              ></reels-modal-card> -->
+              <reels-modal-card-holder
+                :toggleModal="toggleModal"
+                :slide="slide"
+                :slideIndex="index"
+                :activeSlideIndex="activeSlideIndex"
+              ></reels-modal-card-holder>
             </swiper-slide>
           </ReelsModalSlider>
         </div>
@@ -21,6 +28,7 @@
 <script>
 import ReelsModalSlider from "./ReelsModalSlider.vue";
 import ReelsModalCard from "./ReelsModalCard.vue";
+import ReelsModalCardHolder from "./ReelsModalCardHolder.vue";
 import { SwiperSlide } from "swiper/vue";
 
 export default {
@@ -28,11 +36,25 @@ export default {
     ReelsModalSlider,
     ReelsModalCard,
     SwiperSlide,
+    ReelsModalCardHolder,
   },
   props: {
     modalActive: Boolean,
     toggleModal: Boolean | Function,
   },
+  methods: {
+    handleSlideChanged(slideData) {
+      this.activeSlideIndex = slideData.realIndex;
+    },
+  },
+  // setup() {
+  //   const swiperRef = ref(null);
+  //   const swiper = useSwiper();
+  //   onMounted(() => {
+  //     // swiperRef.value = swiper.value;
+  //     // console.log(swiperRef.value);
+  //   });
+  // },
   // setup(props, { emit }) {
   //   const close = () => {
   //     emit("close");
@@ -42,6 +64,7 @@ export default {
   // },
   data() {
     return {
+      activeSlideIndex: 0,
       slides: [
         {
           id: 1,
@@ -136,8 +159,7 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden;
   background: rgba(37, 37, 37, 0.86);
   backdrop-filter: blur(50px);
   z-index: 1;
