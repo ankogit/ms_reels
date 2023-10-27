@@ -2,14 +2,21 @@
   <section class="reels">
     <reels-swiper>
       <template v-slot:reel-cards>
-        <swiper-slide v-for="(card, index) in reelCards" :key="index" class="swiper-slide">
-          <reels-card :title="card.title" @click="toggleModal"/>
+        <swiper-slide
+          v-for="(card, index) in reelCards"
+          :key="index"
+          class="swiper-slide"
+        >
+          <reels-card :title="card.title" @click="toggleModal" />
         </swiper-slide>
       </template>
     </reels-swiper>
   </section>
 
-  <reels-modal :modalActive="modalActive" :toggleModal="toggleModal"></reels-modal>
+  <reels-modal
+    :modalActive="modalActive"
+    :toggleModal="toggleModal"
+  ></reels-modal>
 </template>
 
 <script>
@@ -24,8 +31,8 @@ export default {
     ReelsSwiper,
     ReelsCard,
     SwiperSlide,
-    ReelsModal
-},
+    ReelsModal,
+  },
   data() {
     return {
       reelCards: [
@@ -44,14 +51,14 @@ export default {
     };
   },
   setup() {
-    const modalActive = ref(true)
-    
-    const toggleModal = () => {
-      modalActive.value = !modalActive.value
-    }
+    const modalActive = ref(true);
 
-    return {modalActive, toggleModal}
-  }
+    const toggleModal = () => {
+      modalActive.value = !modalActive.value;
+    };
+
+    return { modalActive, toggleModal };
+  },
 };
 </script>
 
@@ -59,7 +66,7 @@ export default {
 section.reels {
   padding-top: 20px;
   width: 100%;
-  background-color: #ddd;
+  background-color: #fff;
 }
 
 .swiper-slide {

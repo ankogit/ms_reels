@@ -116,7 +116,7 @@
 
 <script>
 import Loader from "./Loader.vue";
-import { onMounted, ref, computed, onUnmounted } from "vue";
+import { onMounted, ref, computed, onUnmounted, onBeforeUnmount } from "vue";
 import { useSwiperSlide, useSwiper } from "swiper/vue";
 import ReelsModalCard from "./ReelsModalCard.vue";
 import { VIDEO_SOURCE_TYPE, IMAGE_SOURCE_TYPE } from "@/common/constants.js";
@@ -152,10 +152,17 @@ export default {
     const swiperRef = ref(null);
     const swiper = useSwiper();
 
-    onUnmounted(() => {
+    const isDestroying = ref(false);
+
+    onBeforeUnmount(() => {
+      isDestroying.value = true;
       document.removeEventListener("keydown", keydownHandler.value);
-      console.log("onUnmounted");
+      resetProgress();
+      console.log("onBeforeUnmount");
     }),
+      onUnmounted(() => {
+        console.log("onUnmounted");
+      }),
       onMounted(() => {
         activePage.value = props.slide.pages[0];
         maxActivePages.value = props.slide.pages.length;
@@ -208,6 +215,8 @@ export default {
     };
 
     const startProgress = () => {
+      if (isDestroying.value) return;
+
       console.log("startProgress");
       timer.value = setInterval(() => {
         if (!isPause.value && !isLoading.value) {
@@ -272,8 +281,15 @@ export default {
       isPause.value = event.target.paused;
     };
     const updateProgressBar = () => {
-      if (activePage.value.sourceType == VIDEO_SOURCE_TYPE) {
+      if (
+        activePage.value.sourceType == VIDEO_SOURCE_TYPE &&
+        !isPause.value &&
+        !isLoading.value
+      ) {
         if (videoElement.value) {
+          console.log(
+            videoElement.value.currentTime / videoElement.value.duration
+          );
           progress.value =
             (videoElement.value.currentTime / videoElement.value.duration) *
             100;
@@ -282,10 +298,12 @@ export default {
     };
 
     const imageLoaded = () => {
-      console.log("imageLoaded");
-      isPause.value = false;
-      isLoading.value = false;
-      startProgress();
+      if (activePage.value.sourceType == IMAGE_SOURCE_TYPE) {
+        console.log("imageLoaded");
+        isPause.value = false;
+        isLoading.value = false;
+        startProgress();
+      }
     };
 
     const nextPage = () => {
@@ -310,10 +328,10 @@ export default {
     };
     const prevPage = () => {
       if (activePageId.value > 0) {
+        resetProgress();
         activePageId.value--;
         activePage.value = props.slide.pages[activePageId.value];
         isLoading.value = true;
-        resetProgress();
       } else {
         if (props.activeSlideIndex === 0) {
           console.log("prev");

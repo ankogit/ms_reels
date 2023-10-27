@@ -15,9 +15,12 @@
             />
           </a>
         </div>
+
+        <div class="card-body-title">
+          <div class="card-title">{{ title }}</div>
+        </div>
       </div>
     </div>
-    <div class="card-title">{{ title }}</div>
   </div>
 </template>
 
@@ -33,7 +36,7 @@ defineProps({
 .card {
   display: flex;
   width: 144px;
-  height: 230px;
+  height: 180px;
   flex-direction: column;
   align-items: center;
   box-sizing: border-box;
@@ -46,9 +49,9 @@ defineProps({
   flex-direction: column;
   align-items: center;
   gap: 25px;
-  border: 2px solid #2980b9;
-  background-color: #ffffff;
-  border-radius: 13px;
+  border: 2px solid #43a8ea;
+  background-color: transparent;
+  border-radius: 33px;
   position: relative;
   overflow: hidden;
   padding: 3px;
@@ -62,10 +65,18 @@ defineProps({
   align-items: center;
   gap: 10px;
   /* flex-shrink: 0; */
-  border-radius: 11px;
-  background-color: #ddd;
+  border-radius: 30px;
+  background-color: #db0505;
   overflow: hidden;
   position: relative;
+}
+.card-body-container:before {
+  border: 2px solid #8e8b8b69;
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 30px;
 }
 .card-body-container::after {
   content: "";
@@ -90,24 +101,34 @@ defineProps({
   /* height: auto; */
 }
 .card-title {
-  height: 60px;
-  color: #818181;
-  text-align: center;
+  color: #fff;
   font-family: Roboto;
   font-size: 12px;
   font-style: normal;
   font-weight: 400;
   line-height: normal;
-  padding-top: 10px;
+  padding: 10px;
+  padding-bottom: 20px;
 }
 .card-body-avatar {
   position: absolute;
-  bottom: 10px;
+  top: 10px;
   left: 10px;
   width: 24px;
   height: 24px;
   border-radius: 50%;
   overflow: hidden;
   z-index: 5;
+}
+
+.card-body-title {
+  display: flex;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 4;
+  flex-direction: column;
+  align-items: left;
+  justify-content: flex-end;
 }
 </style>
