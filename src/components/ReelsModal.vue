@@ -3,16 +3,15 @@
     <transition name="modal-animation">
       <div v-if="modalActive">
         <div class="reels-modal">
+          <div class="reels-modal-close" @click="closeModal"></div>
           <div class="reels-modal-light"></div>
-          <ReelsModalSlider @slide-changed="handleSlideChanged">
+          <ReelsModalSlider
+            @slide-changed="handleSlideChanged"
+            :activeSlideIndex="activeSlideIndex"
+          >
             <swiper-slide v-for="(slide, index) in slides" :key="index">
-              <!-- <reels-modal-card
-                :toggleModal="toggleModal"
-                :slide="slide"
-                v-if="activeSlideIndex === index"
-              ></reels-modal-card> -->
               <reels-modal-card-holder
-                :toggleModal="toggleModal"
+                :closeModal="closeModal"
                 :slide="slide"
                 :slideIndex="index"
                 :activeSlideIndex="activeSlideIndex"
@@ -27,25 +26,36 @@
 
 <script>
 import ReelsModalSlider from "./ReelsModalSlider.vue";
-import ReelsModalCard from "./ReelsModalCard.vue";
 import ReelsModalCardHolder from "./ReelsModalCardHolder.vue";
 import { SwiperSlide } from "swiper/vue";
 
 export default {
   components: {
     ReelsModalSlider,
-    ReelsModalCard,
     SwiperSlide,
     ReelsModalCardHolder,
   },
   props: {
     modalActive: Boolean,
-    toggleModal: Boolean | Function,
+    closeModal: Boolean | Function,
+    slides: Array,
+    activeSlide: null,
+    slideIndex: 0,
+    slideChanged: Function,
   },
   methods: {
     handleSlideChanged(slideData) {
-      this.activeSlideIndex = slideData.realIndex;
+      this.activeSlideIndex = slideData.activeIndex;
+      this.slideChanged(slideData.activeIndex);
     },
+  },
+  beforeMount() {
+    this.activeSlideIndex = this.slideIndex;
+    console.log(
+      "this.activeSlideIndex",
+      this.activeSlideIndex,
+      this.slideIndex
+    );
   },
   // setup() {
   //   const swiperRef = ref(null);
@@ -65,63 +75,6 @@ export default {
   data() {
     return {
       activeSlideIndex: 0,
-      slides: [
-        {
-          id: 1,
-          user: "user1",
-          title: "Очень длинное название что-то про Иссыкуль",
-          postId: 1,
-          pages: [
-            {
-              id: 1,
-              source:
-                "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-              sourceType: "video",
-              createdAt: "2021-08-01T12:00:00.000Z",
-              description: "Очень длинное название что-то про Иссыкуль",
-            },
-            {
-              id: 2,
-              source: "https://samplelib.com/lib/preview/mp4/sample-10s.jpg",
-              sourceType: "image",
-              createdAt: "2022-08-01T11:00:00.000Z",
-              description: "",
-            },
-          ],
-        },
-        {
-          id: 2,
-          user: "user2",
-          title: "Card 2",
-          postId: 2,
-          pages: [
-            {
-              id: 1,
-              source:
-                "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
-              sourceType: "video",
-              createdAt: "2021-08-01T12:00:00.000Z",
-              description: "Очень длинное название что-то про Иссыкуль",
-            },
-            {
-              id: 2,
-              source:
-                "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4",
-              sourceType: "video",
-              createdAt: "2022-08-01T11:00:00.000Z",
-              description: "",
-            },
-            {
-              id: 3,
-              source:
-                "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4",
-              sourceType: "video",
-              createdAt: "2022-08-01T11:00:00.000Z",
-              description: "",
-            },
-          ],
-        },
-      ],
     };
   },
   // methods: {
@@ -171,7 +124,12 @@ export default {
   align-items: center;
   justify-content: center;
 }
-
+.reels-modal-close {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
 .swiper-slide {
   display: flex;
   align-items: center;

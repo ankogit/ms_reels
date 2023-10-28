@@ -5,6 +5,8 @@ import ReelsSection from "./components/ReelsSection.vue";
 <template>
   <div id="modals"></div>
   <ReelsSection />
+  <ReelsSection />
+  <ReelsSection />
 </template>
 
 <style scoped></style>

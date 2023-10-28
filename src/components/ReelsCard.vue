@@ -3,21 +3,15 @@
     <!-- <img :src="imageSrc" alt="Card image"> -->
     <div class="card-body">
       <div class="card-body-container">
-        <img
-          src="https://imgv3.fotor.com/images/slider-image/a-man-holding-a-camera-with-image-filter.jpg"
-          alt=""
-        />
+        <img :src="slide.preview" alt="" v-if="slide.preview" />
         <div class="card-body-avatar">
           <a href="#">
-            <img
-              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQWyBQDPbrs0KAA9ahYQAkRT9CCw1CZuz-lXQ&usqp=CAU"
-              alt=""
-            />
+            <img :src="slide.user.avatar" alt="" v-if="slide.user.avatar" />
           </a>
         </div>
 
-        <div class="card-body-title">
-          <div class="card-title">{{ title }}</div>
+        <div class="card-body-title" v-if="slide.title">
+          <div class="card-title">{{ slide.title }}</div>
         </div>
       </div>
     </div>
@@ -26,9 +20,7 @@
 
 <script setup>
 defineProps({
-  title: {
-    type: String,
-  },
+  slide: Object,
 });
 </script>
 

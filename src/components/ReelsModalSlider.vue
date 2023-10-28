@@ -5,9 +5,11 @@
     :modules="modules"
     class="mySwiper"
     :freeMode="false"
-    :mousewheel="false"
+    :mousewheel="true"
     draggable="false"
     @slideChange="handleSlideChange"
+    @swiper="onSwiper"
+    :initialSlide="activeSlideIndex"
   >
     <slot />
   </swiper>
@@ -33,22 +35,33 @@ export default {
     Swiper,
     SwiperSlide,
   },
+  props: {
+    activeSlideIndex: 0,
+  },
   setup() {
     return {
-      modules: [
-        EffectCards,
-        // FreeMode, Mousewheel,
-      ],
+      modules: [EffectCards, FreeMode, Mousewheel],
     };
   },
+  // mounted() {
+  //   console.log("this.activeSlideIndex S", this.activeSlideIndex);
+  //   this.goToSlide(this.activeSlideIndex);
+  // },
   data() {
     return {
+      swiper: null,
       activeSlideKey: null, // Ключ активного слайда
     };
   },
   methods: {
+    onSwiper(swiper) {
+      this.swiper = swiper;
+    },
     handleSlideChange(slideData) {
       this.$emit("slide-changed", slideData);
+    },
+    goToSlide(index) {
+      this.swiper.slideTo(index);
     },
   },
 };

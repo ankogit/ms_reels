@@ -1,29 +1,19 @@
 <template>
   <div style="width: 100%; height: 100%" v-if="activeSlideIndex === slideIndex">
-    <test
+    <ReelsModalCard
       :slide="slide"
       :slideIndex="slideIndex"
       :activeSlideIndex="activeSlideIndex"
-      :toggleModal="toggleModal"
+      :closeModal="closeModal"
     />
   </div>
-  <!-- <reels-modal-card
-    :toggleModal="toggleModal"
-    :slide="slide"
-    :activeSlideIndex="activeSlideIndex"
-    :slideIndex="slideIndex"
-    v-if="activeSlideIndex === slideIndex"
-  ></reels-modal-card> -->
 </template>
-<!-- v-if="activeSlideIndex === slideIndex" -->
 
 <script setup>
-import { SwiperSlide } from "swiper/vue";
 import ReelsModalCard from "./ReelsModalCard.vue";
-import Test from "./Test.vue";
 
 const props = defineProps({
-  toggleModal: Function,
+  closeModal: Function,
   slide: Object,
   slideIndex: Number,
   activeSlideIndex: Number,
