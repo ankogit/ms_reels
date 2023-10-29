@@ -12,15 +12,21 @@
       </template>
     </reels-swiper>
   </section>
-  <reels-modal
-    v-if="modalActive"
-    :modalActive="modalActive"
-    :slides="reelsSlides"
-    :activeSlide="activeSlide"
-    :slideIndex="activeSlideIndex"
-    :closeModal="closeModal"
-    :slideChanged="goToSlide"
-  ></reels-modal>
+
+  <Teleport to="#modals">
+    <transition name="modal">
+      <reels-modal
+        :modalActive="modalActive"
+        v-if="modalActive"
+        :slides="reelsSlides"
+        :activeSlide="activeSlide"
+        :slideIndex="activeSlideIndex"
+        :closeModal="closeModal"
+        :slideChanged="goToSlide"
+      ></reels-modal>
+      <!-- <div class="test-modal" v-if="modalActive" @click="closeModal"></div> -->
+    </transition>
+  </Teleport>
 </template>
 
 <script>
@@ -37,6 +43,9 @@ export default {
     SwiperSlide,
     ReelsModal,
   },
+  // props: {
+  //   reelsSlides: Array
+  // },
   setup(props) {
     const reelsListSlider = ref(null);
 
@@ -563,11 +572,68 @@ export default {
 section.reels {
   padding-top: 20px;
   width: 100%;
-  background-color: #fff;
 }
 
 .swiper-slide {
   display: block;
   width: auto;
+}
+.test-modal {
+  position: absolute;
+  width: 100vw;
+  height: 100vh;
+  background-color: #000000;
+}
+</style>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+}
+
+section.reels {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+section.reels *,
+section.reels *::before,
+section.reels *::after {
+  -webkit-box-sizing: inherit;
+  box-sizing: inherit;
+}
+
+#modals {
+  z-index: 10000;
+  position: relative;
+}
+
+/* Стили для появления */
+.modal-enter-active {
+  animation: slide-in 0.2s;
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Стили для исчезновения */
+.modal-leave-active {
+  animation: slide-out 0.2s;
+}
+
+@keyframes slide-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }
 </style>

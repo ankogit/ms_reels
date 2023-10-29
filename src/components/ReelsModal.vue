@@ -1,27 +1,27 @@
 <template>
-  <Teleport to="#modals">
-    <transition name="modal-animation">
-      <div v-if="modalActive">
-        <div class="reels-modal">
-          <div class="reels-modal-close" @click="closeModal"></div>
-          <div class="reels-modal-light"></div>
-          <ReelsModalSlider
-            @slide-changed="handleSlideChanged"
+  <!-- <Teleport to="#modals"> -->
+  <!-- <transition name="modal-animation"> -->
+  <div v-if="modalActive">
+    <div class="reels-modal">
+      <div class="reels-modal-close" @click="closeModal"></div>
+      <div class="reels-modal-light"></div>
+      <ReelsModalSlider
+        @slide-changed="handleSlideChanged"
+        :activeSlideIndex="activeSlideIndex"
+      >
+        <swiper-slide v-for="(slide, index) in slides" :key="index">
+          <reels-modal-card-holder
+            :closeModal="closeModal"
+            :slide="slide"
+            :slideIndex="index"
             :activeSlideIndex="activeSlideIndex"
-          >
-            <swiper-slide v-for="(slide, index) in slides" :key="index">
-              <reels-modal-card-holder
-                :closeModal="closeModal"
-                :slide="slide"
-                :slideIndex="index"
-                :activeSlideIndex="activeSlideIndex"
-              ></reels-modal-card-holder>
-            </swiper-slide>
-          </ReelsModalSlider>
-        </div>
-      </div>
-    </transition>
-  </Teleport>
+          ></reels-modal-card-holder>
+        </swiper-slide>
+      </ReelsModalSlider>
+    </div>
+  </div>
+  <!-- </transition> -->
+  <!-- </Teleport> -->
 </template>
 
 <script>
@@ -112,10 +112,12 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
+  /* width: 100vw;
+  height: 100vh; */
   overflow: hidden;
   background: rgba(37, 37, 37, 0.86);
   backdrop-filter: blur(50px);
-  z-index: 1;
+  z-index: 100;
 
   padding-top: 44px;
   padding-bottom: 44px;
