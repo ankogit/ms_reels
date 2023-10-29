@@ -7,6 +7,7 @@ Instagram or youtube reels slider
 
 
 ## Usage
+
  ```
  <div id="modals"></div>
 
