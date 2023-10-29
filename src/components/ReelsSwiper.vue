@@ -2,7 +2,7 @@
   <swiper
     :centeredSlides="true"
     slidesPerView="auto"
-    :spaceBetween="14"
+    :spaceBetween="10"
     :grabCursor="true"
     :modules="modules"
     class="mySwiper"
@@ -11,6 +11,7 @@
     watchOverflow
     ref="swiperListRef"
     @swiper="onSwiper"
+    :initialSlide="activeSlideIndex"
   >
     <slot name="reel-cards"></slot>
     <!-- <swiper-slide v-for="(slide, index) in slides" :key="index">
@@ -38,6 +39,7 @@ export default {
     SwiperSlide,
   },
   props: {
+    activeSlideIndex: 0,
     // slides: {
     //   type: Array,
     //   required: true,

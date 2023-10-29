@@ -5,7 +5,7 @@
     :modules="modules"
     class="mySwiper"
     :freeMode="false"
-    :mousewheel="true"
+    :mousewheel="false"
     draggable="false"
     @slideChange="handleSlideChange"
     @swiper="onSwiper"
@@ -15,19 +15,14 @@
   </swiper>
 </template>
 <script>
-// Import Swiper Vue.js components
 import { Swiper, SwiperSlide } from "swiper/vue";
 
-// Import Swiper styles
 import "swiper/css";
-
 import "swiper/css/effect-cards";
 import "swiper/css/navigation";
 
-// import required modules
 import { EffectCards } from "swiper/modules";
-
-import { FreeMode, Mousewheel } from "swiper/modules";
+// import { FreeMode, Mousewheel } from "swiper/modules";
 import { Navigation } from "swiper/modules";
 
 export default {
@@ -40,13 +35,13 @@ export default {
   },
   setup() {
     return {
-      modules: [EffectCards, FreeMode, Mousewheel],
+      modules: [
+        EffectCards,
+        // , FreeMode, Mousewheel
+      ],
     };
   },
-  // mounted() {
-  //   console.log("this.activeSlideIndex S", this.activeSlideIndex);
-  //   this.goToSlide(this.activeSlideIndex);
-  // },
+
   data() {
     return {
       swiper: null,

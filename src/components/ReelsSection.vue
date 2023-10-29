@@ -1,7 +1,13 @@
 <template>
   <section class="reels">
-    <reels-swiper ref="reelsListSlider">
+    <reels-swiper
+      ref="reelsListSlider"
+      :activeSlideIndex="activeSlideListIndex"
+    >
       <template v-slot:reel-cards>
+        <swiper-slide class="swiper-slide" v-if="creationMode">
+          <reels-card :creationMode="true" @click="openInNewTab(createLink)" />
+        </swiper-slide>
         <swiper-slide
           v-for="(card, index) in reelsSlides"
           :key="index"
@@ -20,7 +26,7 @@
         v-if="modalActive"
         :slides="reelsSlides"
         :activeSlide="activeSlide"
-        :slideIndex="activeSlideIndex"
+        :slideIndex="activeSliderIndex"
         :closeModal="closeModal"
         :slideChanged="goToSlide"
       ></reels-modal>
@@ -34,7 +40,7 @@ import ReelsSwiper from "./ReelsSwiper.vue";
 import ReelsCard from "./ReelsCard.vue";
 import { SwiperSlide } from "swiper/vue";
 import ReelsModal from "./ReelsModal.vue";
-import { ref } from "vue";
+import { onBeforeMount, onMounted, ref } from "vue";
 
 export default {
   components: {
@@ -43,497 +49,31 @@ export default {
     SwiperSlide,
     ReelsModal,
   },
-  // props: {
-  //   reelsSlides: Array
-  // },
+  props: {
+    reelsSlides: {
+      type: Array,
+      required: true,
+    },
+    creationMode: false,
+    createLink: "",
+  },
   setup(props) {
     const reelsListSlider = ref(null);
 
-    const reelsSlides = ref([]);
-    reelsSlides.value = [
-      {
-        id: 1,
-        user: {
-          id: 1,
-          username: "anko",
-          avatar:
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQWyBQDPbrs0KAA9ahYQAkRT9CCw1CZuz-lXQ&usqp=CAU",
-        },
-        title: "Очень длинное название что-то про Иссыкуль",
-        preview: "https://samplelib.com/lib/preview/mp4/sample-10s.jpg",
-        postId: 1,
-        pages: [
-          {
-            id: 1,
-            source:
-              "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-            sourceType: "video",
-            createdAt: "2021-08-01T12:00:00.000Z",
-            description: "Очень длинное название что-то про Иссыкуль",
-          },
-          {
-            id: 2,
-            source: "https://samplelib.com/lib/preview/mp4/sample-10s.jpg",
-            sourceType: "image",
-            createdAt: "2022-08-01T11:00:00.000Z",
-            description: "",
-          },
-
-          {
-            id: 3,
-            source: "https://samplelib.com/lib/preview/mp4/sample-10s.jpg",
-            sourceType: "image",
-            createdAt: "2022-08-01T11:00:00.000Z",
-            description: "",
-          },
-
-          {
-            id: 4,
-            source: "https://samplelib.com/lib/preview/mp4/sample-10s.jpg",
-            sourceType: "image",
-            createdAt: "2022-08-01T11:00:00.000Z",
-            description: "",
-          },
-
-          {
-            id: 5,
-            source: "https://samplelib.com/lib/preview/mp4/sample-10s.jpg",
-            sourceType: "image",
-            createdAt: "2022-08-01T11:00:00.000Z",
-            description: "",
-          },
-
-          {
-            id: 6,
-            source: "https://samplelib.com/lib/preview/mp4/sample-10s.jpg",
-            sourceType: "image",
-            createdAt: "2022-08-01T11:00:00.000Z",
-            description: "",
-          },
-        ],
-      },
-      {
-        id: 2,
-        user: {
-          id: 1,
-          username: "anko",
-          avatar: "",
-        },
-        title: "Card 2",
-        preview:
-          "https://imgv3.fotor.com/images/slider-image/a-man-holding-a-camera-with-image-filter.jpg",
-
-        postId: 2,
-
-        pages: [
-          {
-            id: 1,
-            source:
-              "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
-            sourceType: "video",
-            created_at: "2021-08-01T12:00:00.000Z",
-            description: "Очень длинное название что-то про Иссыкуль",
-          },
-          {
-            id: 2,
-            source:
-              "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4",
-            sourceType: "video",
-            createdAt: "2022-08-01T11:00:00.000Z",
-            description: "",
-          },
-          {
-            id: 3,
-            source:
-              "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4",
-            sourceType: "video",
-            createdAt: "2022-08-01T11:00:00.000Z",
-            description: "",
-          },
-        ],
-      },
-      {
-        id: 1,
-        user: {
-          id: 1,
-          username: "anko",
-          avatar:
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQWyBQDPbrs0KAA9ahYQAkRT9CCw1CZuz-lXQ&usqp=CAU",
-        },
-        title: "Очень длинное название что-то про Иссыкуль",
-        preview: "",
-        postId: 1,
-        pages: [
-          {
-            id: 1,
-            source:
-              "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-            sourceType: "video",
-            createdAt: "2021-08-01T12:00:00.000Z",
-            description: "Очень длинное название что-то про Иссыкуль",
-          },
-          {
-            id: 2,
-            source: "https://samplelib.com/lib/preview/mp4/sample-10s.jpg",
-            sourceType: "image",
-            createdAt: "2022-08-01T11:00:00.000Z",
-            description: "",
-          },
-        ],
-      },
-      {
-        id: 1,
-        user: {
-          id: 1,
-          username: "anko",
-          avatar:
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQWyBQDPbrs0KAA9ahYQAkRT9CCw1CZuz-lXQ&usqp=CAU",
-        },
-        title: "Очень длинное название что-то про Иссыкуль",
-        preview: "https://samplelib.com/lib/preview/mp4/sample-10s.jpg",
-        postId: 1,
-        pages: [
-          {
-            id: 1,
-            source:
-              "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-            sourceType: "video",
-            createdAt: "2021-08-01T12:00:00.000Z",
-            description: "Очень длинное название что-то про Иссыкуль",
-          },
-          {
-            id: 2,
-            source: "https://samplelib.com/lib/preview/mp4/sample-10s.jpg",
-            sourceType: "image",
-            createdAt: "2022-08-01T11:00:00.000Z",
-            description: "",
-          },
-        ],
-      },
-      {
-        id: 1,
-        user: {
-          id: 1,
-          username: "anko",
-          avatar:
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQWyBQDPbrs0KAA9ahYQAkRT9CCw1CZuz-lXQ&usqp=CAU",
-        },
-        title: "Очень длинное название что-то про Иссыкуль",
-        preview: "https://samplelib.com/lib/preview/mp4/sample-10s.jpg",
-        postId: 1,
-        pages: [
-          {
-            id: 1,
-            source:
-              "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-            sourceType: "video",
-            createdAt: "2021-08-01T12:00:00.000Z",
-            description: "Очень длинное название что-то про Иссыкуль",
-          },
-          {
-            id: 2,
-            source: "https://samplelib.com/lib/preview/mp4/sample-10s.jpg",
-            sourceType: "image",
-            createdAt: "2022-08-01T11:00:00.000Z",
-            description: "",
-          },
-        ],
-      },
-      {
-        id: 1,
-        user: {
-          id: 1,
-          username: "anko",
-          avatar:
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQWyBQDPbrs0KAA9ahYQAkRT9CCw1CZuz-lXQ&usqp=CAU",
-        },
-        title: "Очень длинное название что-то про Иссыкуль",
-        preview: "https://samplelib.com/lib/preview/mp4/sample-10s.jpg",
-        postId: 1,
-        pages: [
-          {
-            id: 1,
-            source:
-              "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-            sourceType: "video",
-            createdAt: "2021-08-01T12:00:00.000Z",
-            description: "Очень длинное название что-то про Иссыкуль",
-          },
-          {
-            id: 2,
-            source: "https://samplelib.com/lib/preview/mp4/sample-10s.jpg",
-            sourceType: "image",
-            createdAt: "2022-08-01T11:00:00.000Z",
-            description: "",
-          },
-        ],
-      },
-      {
-        id: 1,
-        user: {
-          id: 1,
-          username: "anko",
-          avatar:
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQWyBQDPbrs0KAA9ahYQAkRT9CCw1CZuz-lXQ&usqp=CAU",
-        },
-        title: "Очень длинное название что-то про Иссыкуль",
-        preview: "https://samplelib.com/lib/preview/mp4/sample-10s.jpg",
-        postId: 1,
-        pages: [
-          {
-            id: 1,
-            source:
-              "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-            sourceType: "video",
-            createdAt: "2021-08-01T12:00:00.000Z",
-            description: "Очень длинное название что-то про Иссыкуль",
-          },
-          {
-            id: 2,
-            source: "https://samplelib.com/lib/preview/mp4/sample-10s.jpg",
-            sourceType: "image",
-            createdAt: "2022-08-01T11:00:00.000Z",
-            description: "",
-          },
-        ],
-      },
-      {
-        id: 1,
-        user: {
-          id: 1,
-          username: "anko",
-          avatar:
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQWyBQDPbrs0KAA9ahYQAkRT9CCw1CZuz-lXQ&usqp=CAU",
-        },
-        title: "Очень длинное название что-то про Иссыкуль",
-        preview: "https://samplelib.com/lib/preview/mp4/sample-10s.jpg",
-        postId: 1,
-        pages: [
-          {
-            id: 1,
-            source:
-              "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-            sourceType: "video",
-            createdAt: "2021-08-01T12:00:00.000Z",
-            description: "Очень длинное название что-то про Иссыкуль",
-          },
-          {
-            id: 2,
-            source: "https://samplelib.com/lib/preview/mp4/sample-10s.jpg",
-            sourceType: "image",
-            createdAt: "2022-08-01T11:00:00.000Z",
-            description: "",
-          },
-        ],
-      },
-      {
-        id: 1,
-        user: {
-          id: 1,
-          username: "anko",
-          avatar:
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQWyBQDPbrs0KAA9ahYQAkRT9CCw1CZuz-lXQ&usqp=CAU",
-        },
-        title: "Очень длинное название что-то про Иссыкуль",
-        preview: "https://samplelib.com/lib/preview/mp4/sample-10s.jpg",
-        postId: 1,
-        pages: [
-          {
-            id: 1,
-            source:
-              "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-            sourceType: "video",
-            createdAt: "2021-08-01T12:00:00.000Z",
-            description: "Очень длинное название что-то про Иссыкуль",
-          },
-          {
-            id: 2,
-            source: "https://samplelib.com/lib/preview/mp4/sample-10s.jpg",
-            sourceType: "image",
-            createdAt: "2022-08-01T11:00:00.000Z",
-            description: "",
-          },
-        ],
-      },
-      {
-        id: 1,
-        user: {
-          id: 1,
-          username: "anko",
-          avatar:
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQWyBQDPbrs0KAA9ahYQAkRT9CCw1CZuz-lXQ&usqp=CAU",
-        },
-        title: "Очень длинное название что-то про Иссыкуль",
-        preview: "https://samplelib.com/lib/preview/mp4/sample-10s.jpg",
-        postId: 1,
-        pages: [
-          {
-            id: 1,
-            source:
-              "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-            sourceType: "video",
-            createdAt: "2021-08-01T12:00:00.000Z",
-            description: "Очень длинное название что-то про Иссыкуль",
-          },
-          {
-            id: 2,
-            source: "https://samplelib.com/lib/preview/mp4/sample-10s.jpg",
-            sourceType: "image",
-            createdAt: "2022-08-01T11:00:00.000Z",
-            description: "",
-          },
-        ],
-      },
-      {
-        id: 1,
-        user: {
-          id: 1,
-          username: "anko",
-          avatar:
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQWyBQDPbrs0KAA9ahYQAkRT9CCw1CZuz-lXQ&usqp=CAU",
-        },
-        title: "Очень длинное название что-то про Иссыкуль",
-        preview: "https://samplelib.com/lib/preview/mp4/sample-10s.jpg",
-        postId: 1,
-        pages: [
-          {
-            id: 1,
-            source:
-              "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-            sourceType: "video",
-            createdAt: "2021-08-01T12:00:00.000Z",
-            description: "Очень длинное название что-то про Иссыкуль",
-          },
-          {
-            id: 2,
-            source: "https://samplelib.com/lib/preview/mp4/sample-10s.jpg",
-            sourceType: "image",
-            createdAt: "2022-08-01T11:00:00.000Z",
-            description: "",
-          },
-        ],
-      },
-      {
-        id: 1,
-        user: {
-          id: 1,
-          username: "anko",
-          avatar:
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQWyBQDPbrs0KAA9ahYQAkRT9CCw1CZuz-lXQ&usqp=CAU",
-        },
-        title: "Очень длинное название что-то про Иссыкуль",
-        preview: "https://samplelib.com/lib/preview/mp4/sample-10s.jpg",
-        postId: 1,
-        pages: [
-          {
-            id: 1,
-            source:
-              "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-            sourceType: "video",
-            createdAt: "2021-08-01T12:00:00.000Z",
-            description: "Очень длинное название что-то про Иссыкуль",
-          },
-          {
-            id: 2,
-            source: "https://samplelib.com/lib/preview/mp4/sample-10s.jpg",
-            sourceType: "image",
-            createdAt: "2022-08-01T11:00:00.000Z",
-            description: "",
-          },
-        ],
-      },
-      {
-        id: 1,
-        user: {
-          id: 1,
-          username: "anko",
-          avatar:
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQWyBQDPbrs0KAA9ahYQAkRT9CCw1CZuz-lXQ&usqp=CAU",
-        },
-        title: "Очень длинное название что-то про Иссыкуль",
-        preview: "https://samplelib.com/lib/preview/mp4/sample-10s.jpg",
-        postId: 1,
-        pages: [
-          {
-            id: 1,
-            source:
-              "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-            sourceType: "video",
-            createdAt: "2021-08-01T12:00:00.000Z",
-            description: "Очень длинное название что-то про Иссыкуль",
-          },
-          {
-            id: 2,
-            source: "https://samplelib.com/lib/preview/mp4/sample-10s.jpg",
-            sourceType: "image",
-            createdAt: "2022-08-01T11:00:00.000Z",
-            description: "",
-          },
-        ],
-      },
-      {
-        id: 1,
-        user: {
-          id: 1,
-          username: "anko",
-          avatar:
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQWyBQDPbrs0KAA9ahYQAkRT9CCw1CZuz-lXQ&usqp=CAU",
-        },
-        title: "Очень длинное название что-то про Иссыкуль",
-        preview: "https://samplelib.com/lib/preview/mp4/sample-10s.jpg",
-        postId: 1,
-        pages: [
-          {
-            id: 1,
-            source:
-              "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-            sourceType: "video",
-            createdAt: "2021-08-01T12:00:00.000Z",
-            description: "Очень длинное название что-то про Иссыкуль",
-          },
-          {
-            id: 2,
-            source: "https://samplelib.com/lib/preview/mp4/sample-10s.jpg",
-            sourceType: "image",
-            createdAt: "2022-08-01T11:00:00.000Z",
-            description: "",
-          },
-        ],
-      },
-      {
-        id: 1,
-        user: {
-          id: 1,
-          username: "anko",
-          avatar:
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQWyBQDPbrs0KAA9ahYQAkRT9CCw1CZuz-lXQ&usqp=CAU",
-        },
-        title: "Очень длинное название что-то про Иссыкуль",
-        preview: "https://samplelib.com/lib/preview/mp4/sample-10s.jpg",
-        postId: 1,
-        pages: [
-          {
-            id: 1,
-            source:
-              "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-            sourceType: "video",
-            createdAt: "2021-08-01T12:00:00.000Z",
-            description: "Очень длинное название что-то про Иссыкуль",
-          },
-          {
-            id: 2,
-            source: "https://samplelib.com/lib/preview/mp4/sample-10s.jpg",
-            sourceType: "image",
-            createdAt: "2022-08-01T11:00:00.000Z",
-            description: "",
-          },
-        ],
-      },
-    ];
     const modalActive = ref(false);
 
-    const activeSlideIndex = ref(0);
-    const activeSlide = ref(reelsSlides[activeSlideIndex.value]);
+    const activeSlideListIndex = ref(0);
+    const activeSliderIndex = ref(0);
+
+    const activeSlide = ref(0);
+    if (props.reelsSlides.length > 0) {
+      if (props.creationMode) {
+        activeSlideListIndex.value = activeSlideListIndex.value + 1;
+      } else {
+        activeSlideListIndex.value = activeSlideListIndex.value;
+      }
+      activeSlide.value = props.reelsSlides[activeSlideListIndex.value];
+    }
 
     const toggleModal = () => {
       modalActive.value = !modalActive.value;
@@ -543,26 +83,43 @@ export default {
     };
 
     const openModal = (index) => {
-      activeSlide.value = reelsSlides[index];
-      activeSlideIndex.value = index;
+      activeSlide.value = props.reelsSlides[index];
+      if (props.creationMode) {
+        activeSlideListIndex.value = index + 1;
+        activeSliderIndex.value = index;
+      } else {
+        activeSlideListIndex.value = index;
+        activeSliderIndex.value = index;
+      }
       modalActive.value = !modalActive.value;
     };
 
     const goToSlide = (index) => {
       const swiper = reelsListSlider.value.swiperController;
-      swiper.slideTo(index);
+
+      if (props.creationMode) {
+        activeSlideListIndex.value = index + 1;
+      } else {
+        activeSlideListIndex.value = index;
+      }
+      swiper.slideTo(activeSlideListIndex.value);
     };
 
+    const openInNewTab = (url) => {
+      window.open(url, "_blank", "noreferrer");
+    };
     return {
-      reelsSlides,
+      onBeforeMount,
       modalActive,
       toggleModal,
       closeModal,
       openModal,
       goToSlide,
       activeSlide,
-      activeSlideIndex,
+      activeSliderIndex,
+      activeSlideListIndex,
       reelsListSlider,
+      openInNewTab,
     };
   },
 };

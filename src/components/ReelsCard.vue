@@ -1,10 +1,28 @@
 <template>
   <div class="card">
-    <!-- <img :src="imageSrc" alt="Card image"> -->
-    <div class="card-body">
+    <div class="card-body--creationMode" v-if="creationMode">
+      <div class="card-body-container--creationMode">
+        <div class="plus">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            x="0px"
+            y="0px"
+            width="100"
+            height="100"
+            viewBox="0 0 24 24"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M 11 2 L 11 11 L 2 11 L 2 13 L 11 13 L 11 22 L 13 22 L 13 13 L 22 13 L 22 11 L 13 11 L 13 2 Z"
+            ></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <div class="card-body" v-if="!creationMode">
       <div class="card-body-container">
         <img :src="slide.preview" alt="" v-if="slide.preview" />
-        <div class="card-body-avatar">
+        <div class="card-body-avatar" v-if="slide.user">
           <a href="#">
             <img :src="slide.user.avatar" alt="" v-if="slide.user.avatar" />
           </a>
@@ -21,6 +39,7 @@
 <script setup>
 defineProps({
   slide: Object,
+  creationMode: false,
 });
 </script>
 
@@ -122,5 +141,43 @@ defineProps({
   flex-direction: column;
   align-items: left;
   justify-content: flex-end;
+}
+
+.card-body--creationMode {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  gap: 25px;
+  border: 2px solid #43a8ea;
+  background-color: transparent;
+  border-radius: 33px;
+  position: relative;
+  overflow: hidden;
+  padding: 3px;
+}
+
+.card-body-container--creationMode {
+  cursor: pointer;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  /* flex-shrink: 0; */
+  border-radius: 30px;
+  overflow: hidden;
+  position: relative;
+}
+.card-body-container--creationMode .plus {
+  width: 50%;
+  height: 50%;
+}
+.card-body-container--creationMode .plus svg {
+  fill: #43a8ea;
+  width: 100%;
+  height: 100%;
 }
 </style>

@@ -34,7 +34,7 @@
         <div class="reels-modal-card-header-info">
           <div
             class="reels-modal-card-header-info-avatar"
-            v-if="slide.user.avatar"
+            v-if="slide.user?.avatar"
           >
             <img :src="slide.user.avatar" alt="" />
           </div>
@@ -42,16 +42,16 @@
           <div class="reels-modal-card-header-info-block">
             <div
               class="reels-modal-card-header-info-title"
-              v-if="slide.user.avatar"
+              v-if="slide.user?.title"
             >
               {{ slide.title }}
             </div>
             <div class="reels-modal-card-header-info-createdblock">
               <div
                 class="reels-modal-card-header-info-username"
-                v-if="slide.user.username"
+                v-if="slide.user?.username"
               >
-                {{ slide.user.username }}
+                {{ slide.user?.username }}
               </div>
               <div
                 class="reels-modal-card-header-info-date"
@@ -141,7 +141,7 @@
 import Loader from "./Loader.vue";
 import { onMounted, ref, computed, onUnmounted, onBeforeUnmount } from "vue";
 import { useSwiperSlide, useSwiper } from "swiper/vue";
-import { VIDEO_SOURCE_TYPE, IMAGE_SOURCE_TYPE } from "@/common/constants.js";
+import { VIDEO_SOURCE_TYPE, IMAGE_SOURCE_TYPE } from "../common/constants.js";
 
 export default {
   components: {
@@ -182,18 +182,14 @@ export default {
       isDestroying.value = true;
       document.removeEventListener("keydown", keydownHandler.value);
       resetProgress();
-      console.log("onBeforeUnmount");
     }),
-      onUnmounted(() => {
-        console.log("onUnmounted");
-      }),
+      onUnmounted(() => {}),
       onMounted(() => {
         resetProgress();
 
         activePage.value = props.slide.pages[0];
         maxActivePages.value = props.slide.pages.length;
         activePageId.value = 0;
-        console.log("onMounted", activePage.value, props.slide.pages);
 
         keydownHandler.value = (e) => {
           if (e.key === "ArrowRight") {
@@ -244,32 +240,34 @@ export default {
     const startProgress = () => {
       if (isDestroying.value) return;
 
-      console.log("startProgress");
-      timer.value = setInterval(() => {
-        if (!isPause.value && !isLoading.value) {
-          if (currentTime.value <= autoDelay) {
-            currentTime.value += 100;
-            progress.value = (currentTime.value / autoDelay) * 100;
-            // console.log(progress.value);
+      if (!timer.value) {
+        timer.value = setInterval(() => {
+          if (!isPause.value && !isLoading.value) {
+            if (currentTime.value <= autoDelay) {
+              currentTime.value += 100;
+              progress.value = (currentTime.value / autoDelay) * 100;
+              console.log(progress.value);
+            }
+            if (progress.value >= 100) {
+              resetProgress();
+              nextPage();
+            }
           }
-          if (progress.value >= 100) {
-            resetProgress();
-            nextPage();
-          }
-        }
-      }, 100);
+        }, 100);
+      }
     };
 
     const stopProgress = () => {
-      console.log("stopProgress");
       clearInterval(timer.value);
+      timer.value = null;
     };
 
     const resetProgress = () => {
-      console.log("resetProgress");
       isHolding.value = false;
       clearInterval(timer.value);
+      timer.value = null;
       clearInterval(pressTimer.value);
+      pressTimer.value = null;
       progress.value = 0;
       currentTime.value = 0;
       duration.value = 0; // Вы можете определить 'duration', если это необходимо
@@ -278,7 +276,7 @@ export default {
       isPause.value = true;
       stopProgress();
       if (activePage.value.sourceType == VIDEO_SOURCE_TYPE) {
-        if (videoElement) {
+        if (videoElement.value) {
           videoElement.value.pause();
         }
       }
@@ -294,7 +292,6 @@ export default {
     };
 
     const logDuration = (event) => {
-      console.log("logDuration", event);
       if (!videoElement.value) {
         videoElement.value = event.target;
       }
@@ -305,7 +302,6 @@ export default {
       nextPage();
     };
     const updateVideoPaused = (event) => {
-      console.log("updateVideoPaused", event.target.paused);
       videoElement.value = event.target;
       isPause.value = event.target.paused;
     };
@@ -316,19 +312,17 @@ export default {
         !isLoading.value
       ) {
         if (videoElement.value) {
-          // console.log(
-          //   videoElement.value.currentTime / videoElement.value.duration
-          // );
           progress.value =
             (videoElement.value.currentTime / videoElement.value.duration) *
             100;
+          console.log(progress.value);
         }
       }
     };
 
-    const imageLoaded = () => {
+    const imageLoaded = (e) => {
+      console.log("imageLoaded", e);
       if (activePage.value.sourceType == IMAGE_SOURCE_TYPE) {
-        console.log("imageLoaded");
         isPause.value = false;
         isLoading.value = false;
         startProgress();
@@ -339,7 +333,6 @@ export default {
       if (!isHolding.value) {
         if (props.activeSlideIndex === props.slideIndex) {
           if (activePageId.value < maxActivePages.value - 1) {
-            console.log("nextPage", activePageId.value);
             activePageId.value++;
             activePage.value = props.slide.pages[activePageId.value];
 
@@ -370,7 +363,6 @@ export default {
           isLoading.value = true;
         } else {
           if (props.activeSlideIndex === 0) {
-            console.log("prev");
           } else {
             resetProgress();
             goToPrevSlide();
@@ -389,20 +381,12 @@ export default {
         clearTimeout(pressTimer.value);
         pressTimer.value = setTimeout(() => {
           isHolding.value = true;
-          console.log("isHolding.value", isHolding.value);
         }, 500);
       } else {
         // play();
         // isHolding.value = false;
         // clearTimeout(pressTimer.value);
-
-        console.log(isHolding.value);
       }
-
-      console.log("isHolding", e);
-    };
-    const startPress = () => {
-      console.log("startPress");
     };
 
     return {
@@ -438,7 +422,6 @@ export default {
       nextPage,
       prevPage,
       isHold,
-      startPress,
     };
   },
 };

@@ -1,27 +1,21 @@
 <template>
-  <!-- <Teleport to="#modals"> -->
-  <!-- <transition name="modal-animation"> -->
-  <div v-if="modalActive">
-    <div class="reels-modal">
-      <div class="reels-modal-close" @click="closeModal"></div>
-      <div class="reels-modal-light"></div>
-      <ReelsModalSlider
-        @slide-changed="handleSlideChanged"
-        :activeSlideIndex="activeSlideIndex"
-      >
-        <swiper-slide v-for="(slide, index) in slides" :key="index">
-          <reels-modal-card-holder
-            :closeModal="closeModal"
-            :slide="slide"
-            :slideIndex="index"
-            :activeSlideIndex="activeSlideIndex"
-          ></reels-modal-card-holder>
-        </swiper-slide>
-      </ReelsModalSlider>
-    </div>
+  <div class="reels-modal" v-if="modalActive">
+    <div class="reels-modal-close" @click="closeModal"></div>
+    <div class="reels-modal-light"></div>
+    <ReelsModalSlider
+      @slide-changed="handleSlideChanged"
+      :activeSlideIndex="activeSlideIndex"
+    >
+      <swiper-slide v-for="(slide, index) in slides" :key="index">
+        <reels-modal-card-holder
+          :closeModal="closeModal"
+          :slide="slide"
+          :slideIndex="index"
+          :activeSlideIndex="activeSlideIndex"
+        ></reels-modal-card-holder>
+      </swiper-slide>
+    </ReelsModalSlider>
   </div>
-  <!-- </transition> -->
-  <!-- </Teleport> -->
 </template>
 
 <script>
@@ -57,38 +51,12 @@ export default {
       this.slideIndex
     );
   },
-  // setup() {
-  //   const swiperRef = ref(null);
-  //   const swiper = useSwiper();
-  //   onMounted(() => {
-  //     // swiperRef.value = swiper.value;
-  //     // console.log(swiperRef.value);
-  //   });
-  // },
-  // setup(props, { emit }) {
-  //   const close = () => {
-  //     emit("close");
-  //   };
 
-  //   return { close };
-  // },
   data() {
     return {
       activeSlideIndex: 0,
     };
   },
-  // methods: {
-  //   openModal() {
-  //     this.isModalOpen = true;
-  //     this.modalTimeout = setTimeout(() => {
-  //       this.closeModal();
-  //     }, 5000); // Закрыть модальное окно через 5 секунд
-  //   },
-  //   closeModal() {
-  //     this.isModalOpen = false;
-  //     clearTimeout(this.modalTimeout);
-  //   },
-  // },
 };
 </script>
 
